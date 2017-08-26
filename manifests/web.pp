@@ -25,6 +25,28 @@ file { "/var/lib/tomcat7/webapps/vraptor-musicjungle.war":
   owner => "tomcat7",
   group => "tomcat7",
   mode => 0644,
-  require => Package["tomcat7"],
-  notify => Service["tomcat7"]
+  require => [ Exec["download-vraptor-musicjungle"], Service["tomcat7"] ]
 }
+
+service { "mysql":
+  ensure => running,
+  enable => true,
+  hasstatus => true,
+  hasrestart => true,
+  require => Package ["mysql-server"]
+}
+
+exec { "musicjungle":
+  command => "mysqladmin -u root create musicjungle",
+  unless => "mysql -u root musicjungle",
+  path => "/usr/bin/",
+  require => Service["mysql"]
+}
+
+exec { "usuario-senha":
+  command => "mysql -uroot -e \"GRANT ALL PRIVILEGES ON * TO 'musicjungle'@'%' IDENTIFIED BY 'minha-senha';\" musicjungle",
+  unless => "mysql -umusicjungle -pminha-senha musicjungle",
+  path => "/usr/bin/",
+  require => Exec["musicjungle"]
+}
+
