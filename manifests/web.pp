@@ -25,7 +25,8 @@ file { "/var/lib/tomcat7/webapps/vraptor-musicjungle.war":
   owner => "tomcat7",
   group => "tomcat7",
   mode => 0644,
-  require => [ Exec["download-vraptor-musicjungle"], Service["tomcat7"] ]
+  require => [ Exec["download-vraptor-musicjungle"], Package["tomcat7"] ],
+  notify => Service["tomcat7"]
 }
 
 service { "mysql":
@@ -50,3 +51,15 @@ exec { "usuario-senha":
   require => Exec["musicjungle"]
 }
 
+define file_line($file, $line) {
+  exec { "/bin/echo '${line}' >> '${file}'":
+    unless => "/bin/grep -qFx '${line}' '${file}'"
+  }
+}
+
+file_line { "production":
+  file =>"/bin/grep -qFx '${line}' '${file}'",
+  line =>"JAVA_OPTS=\"\$JAVA_OPTS -Dbr.com.caelum.vraptor.environment=production\"",
+  require => Package["tomcat7"],
+  notify => Service["tomcat7"]
+}
