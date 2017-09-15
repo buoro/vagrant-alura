@@ -7,11 +7,6 @@ package { ["openjdk-7-jre", "tomcat7", "mysql-server"]:
   require => Exec["apt-update"]
 }
 
-exec { "download-vraptor-musicjungle":
-  command => "/usr/bin/wget https://github.com/alura-cursos/provisionamento-com-vagrant-e-puppet/raw/master/manifests/vraptor-musicjungle.war -P /vagrant/manifests",
-  unless => "/bin/cat /vagrant/manifests/vraptor-musicjungle.war"
-}
-
 service { "tomcat7":
   ensure => running,
   enable => true,
@@ -25,7 +20,7 @@ file { "/var/lib/tomcat7/webapps/vraptor-musicjungle.war":
   owner => "tomcat7",
   group => "tomcat7",
   mode => 0644,
-  require => [ Exec["download-vraptor-musicjungle"], Package["tomcat7"] ],
+  require => [ Package["tomcat7"] ],
   notify => Service["tomcat7"]
 }
 
